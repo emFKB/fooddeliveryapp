@@ -18,6 +18,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 #         serializer.instance = user
 
 class UserAPIView(APIView):
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.AllowAny()]
+        if self.request.method in ["GET", "PUT"]:
+            return [permissions.IsAuthenticated()]
+        
     def get(self, request, *args, **kwargs):
         serializer = FetchUserSerializer(data=request.query_params)
         if serializer.is_valid():
@@ -36,7 +42,6 @@ class UserAPIView(APIView):
             user = UserService.create_user(serializer.validated_data)
             response_data = {'user_id':user.user_id, 'uid':user.uid, 'email':user.email, 'is_staff':user.is_staff, 'created_at':user.created_at}
             response_serializer = CreateUserResponseSerializer(data=response_data)
-            print(response_serializer.is_valid(), response_serializer.errors)
             if (response_serializer.is_valid()):
                 return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

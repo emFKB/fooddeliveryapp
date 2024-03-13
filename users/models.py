@@ -45,7 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         db_table = 'Users'
 
     def __str__(self):
-        return self.email
+        return self.user_id
 
 # class User(models.Model):
 #     user_id = models.AutoField(primary_key=True)

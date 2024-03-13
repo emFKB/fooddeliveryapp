@@ -2,8 +2,6 @@ from rest_framework import serializers
 from .models import OrderItem, Order
 from items.serializers import ItemSerializer
 from rest_framework.validators import ValidationError
-from users.models import User
-from items.models import Restaurant
 
 class OrderItemsSerializer(serializers.ModelSerializer):
     items_details = ItemSerializer(source='item_id', read_only=True)
@@ -13,11 +11,15 @@ class OrderItemsSerializer(serializers.ModelSerializer):
         fields = ['id', 'quantity', 'items_details']
 
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = OrderItemsSerializer(many=True, read_only=True)
+    order_items = OrderItemsSerializer(many=True, read_only=True, source='items')
 
     class Meta:
         model = Order
         fields = ['order_id', 'ouid', 'cust_id', 'rest_id', 'order_items']
+        depth = 1
+
+class FetchOrderSerializer(serializers.Serializer):
+    orders = OrderSerializer(many=True, read_only=True)
 
 class ItemRequestSerializer(serializers.Serializer):
     item_id = serializers.IntegerField(required=True)
