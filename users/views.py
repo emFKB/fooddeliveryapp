@@ -2,9 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from .services import UserService
-from .serializers import FetchUserSerializer, CreateUserSerializer, UpdateUserSerializer
-from django.contrib.auth.hashers import make_password
+from .serializers import (FetchUserSerializer, CreateUserSerializer, UpdateUserSerializer,
+                          CreateUserResponseSerializer)
 from django.http import Http404
+from collections import OrderedDict
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # class UserController(generics.CreateAPIView, generics.RetrieveAPIView, generics.RetrieveUpdateAPIView):
 #     serializer_class = FetchUserSerializer
@@ -31,13 +33,12 @@ class UserAPIView(APIView):
         serializer = CreateUserSerializer(data=request.data)
         
         if serializer.is_valid():
-            password = serializer.validated_data.get('password')
-            hashed_pass = make_password(password)
-            serializer.validated_data['password'] = hashed_pass
             user = UserService.create_user(serializer.validated_data)
-            response_data = serializer.data.copy()
-            del response_data['password']
-            return Response(response_data, status=status.HTTP_201_CREATED)
+            response_data = {'user_id':user.user_id, 'uid':user.uid, 'email':user.email, 'is_staff':user.is_staff, 'created_at':user.created_at}
+            response_serializer = CreateUserResponseSerializer(data=response_data)
+            print(response_serializer.is_valid(), response_serializer.errors)
+            if (response_serializer.is_valid()):
+                return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, *args, **kwargs):
@@ -47,3 +48,24 @@ class UserAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class LoginUserView(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        
+        try:
+            user = UserService.get_user(OrderedDict(email=email)).first()
+        except user.DoesNotExist:
+            return Response({'error': 'User does not exist'}, status==status.HTTP_200_OK)
+        if user and user.check_password(password):
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user_id': user.user_id,
+                'uid': user.uid,
+                'username': user.username,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)

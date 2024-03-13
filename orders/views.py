@@ -7,14 +7,15 @@ from .serializers import (CreateOrderSerializer, CreateOrderRequestSerializer,
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 class OrdersCreateView(APIView):
-
+    permission_classes = [IsAuthenticated]
     def post(self, request_data, *args, **kwarsg):
         request_serializer = CreateOrderRequestSerializer(data=request_data.data)
         if request_serializer.is_valid():
             with transaction.atomic():
-                cust = request_serializer.validated_data['cust_id']
+                cust = request_data.user.user_id
                 rest = request_serializer.validated_data['rest_id']
                 total = 0
                 items = request_serializer.validated_data['items']
@@ -32,8 +33,7 @@ class OrdersCreateView(APIView):
                             OrderService.add_orderitems(orderitems_serializer.validated_data)
                     response_dict = {'order_id': order.order_id, 'cust_name': order.cust_id.username, 'rest_name': order.rest_id.rest_name, 'total': order.total}
                     order_response = CreateOrderResponseSerializer(data=response_dict)
-                    print(order_response)
-                    print(order_response.is_valid())
-                    print(order_response.errors)
-                    return Response(order_response.validated_data, status=status.HTTP_201_CREATED)
+                    if order_response.is_valid():
+                        return Response(order_response.validated_data, status=status.HTTP_201_CREATED)
+                    
         return Response(request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

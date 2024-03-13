@@ -24,7 +24,7 @@ class ItemRequestSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(required=True)
 
 class CreateOrderRequestSerializer(serializers.Serializer):
-    cust_id = serializers.IntegerField(required=True)
+    cust_id = serializers.IntegerField(required=False)
     rest_id = serializers.IntegerField(required=True)
     items = ItemRequestSerializer(many=True, required=True)
     total = serializers.FloatField(required=False)
@@ -46,7 +46,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         total = attrs.get('total')
 
         if not rest_id and not cust_id and not total:
-            raise ValidationError("request body missing")
+            raise ValidationError("Request body missing")
 
         if total <= 0:
             raise ValidationError('Total cannot be 0 or less')

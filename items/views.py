@@ -8,8 +8,15 @@ from .services import RestaurantService, ItemService
 from rest_framework.response import Response
 from django.http import Http404
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .permissions import IsStaff
 
 class RestaurantView(APIView):
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsStaff()]
+        else:
+            return [AllowAny()]
     
     def get(self, request_data, *args, **kwargs):
         serializer = SearchRestaurantSerializer(data=request_data.query_params)
@@ -45,7 +52,7 @@ class RestaurantMenuView(APIView):
         
             
 class ItemView(APIView):
-
+    permission_classes = [IsStaff]
     def get(self, request_data, *args, **kwargs):
         try:
             serializer = SearchRestaurantItems(data=request_data.query_params)

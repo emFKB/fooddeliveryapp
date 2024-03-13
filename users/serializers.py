@@ -4,7 +4,7 @@ from .models import User
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'created_at', 'password']
+        fields = ['username', 'email', 'created_at', 'password', 'is_staff']
 
     def validate(self, data):
         errors = {}
@@ -26,6 +26,13 @@ class CreateUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
         
         return data
+
+class CreateUserResponseSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    uid = serializers.UUIDField()
+    email = serializers.EmailField()
+    is_staff = serializers.BooleanField()
+    created_at = serializers.DateTimeField()
 
 class FetchUserSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=False)

@@ -14,12 +14,15 @@ class UserInterface(ABCMeta):
     @abstractstaticmethod
     def get_user_by_id(user_id: int):
         raise NotImplementedError
-
+    
 
 class UserDAO(UserInterface):
-    def create_user(user):
-        return User.objects.create(**user)
-    
+    def create_user(user_data):
+        user = User.objects.create(**user_data)
+        user.set_password(user_data['password'])
+        user.save()
+        return user
+
     def get_user_by_request_data(request_data: OrderedDict):
         user_id = request_data.get('user_id')
         username = request_data.get('username')
