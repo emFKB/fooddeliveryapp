@@ -8,8 +8,8 @@ from .services import RestaurantService, ItemService
 from rest_framework.response import Response
 from django.http import Http404
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import IsStaff, IsAuthorized
+from rest_framework.permissions import AllowAny
+from .permissions import IsAuthorized
 
 class RestaurantView(APIView):
     def get_permissions(self):
@@ -55,7 +55,7 @@ class RestaurantMenuView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ItemView(APIView):
-    permission_classes = [IsStaff]
+    permission_classes = [IsAuthorized]
     def get(self, request_data, *args, **kwargs):
         try:
             serializer = SearchRestaurantItems(data=request_data.query_params)
@@ -77,7 +77,8 @@ class ItemView(APIView):
 
         if (serializer.is_valid()):
             item = ItemService.add_item(serializer.validated_data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            response_item = {'item_id': item.item_id, 'item_name': item.item_name, 'item_desc': item.item_desc, 'item_price': item.item_price, 'rest_id': item.rest_id.rest_id, 'rest_name': item.rest_id.rest_name}
+            return Response(response_item, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request_data, *args, **kwargs):
