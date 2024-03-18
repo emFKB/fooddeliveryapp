@@ -8,6 +8,10 @@ class RestaurantService():
         return RestaurantDAO.add_restaurant(restaurant_data=restaurant_data)
     
     @staticmethod
+    def get_all_restaurant():
+        return RestaurantDAO.get_all_restaurant()
+
+    @staticmethod
     def get_restaurant(attributes: OrderedDict = None, rest_id:int = None):
         if (attributes):
             return RestaurantDAO.get_restaurant_by_attributes(attributes)

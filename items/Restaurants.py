@@ -21,6 +21,10 @@ class RestaurantInterface(metaclass=ABCMeta):
     def get_restaurant_by_attributes(request_data: OrderedDict):
         raise NotImplementedError
     
+    @abstractstaticmethod
+    def get_all_restaurant():
+        raise NotImplementedError
+    
 
 class RestaurantDAO(RestaurantInterface):
     def add_restaurant(restaurant_data):
@@ -50,3 +54,6 @@ class RestaurantDAO(RestaurantInterface):
             return None
         
         return restaurant
+    
+    def get_all_restaurant():
+        return Restaurant.objects.all()

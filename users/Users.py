@@ -18,9 +18,12 @@ class UserInterface(ABCMeta):
 
 class UserDAO(UserInterface):
     def create_user(user_data):
+        roles_data = user_data.pop('roles', [])
         user = User.objects.create(**user_data)
         user.set_password(user_data['password'])
         user.save()
+        if roles_data:
+            user.roles.set(roles_data)
         return user
 
     def get_user_by_request_data(request_data: OrderedDict):

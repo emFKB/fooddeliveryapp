@@ -8,9 +8,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
+from .permissions import IsAuthorized
 
 class OrdersCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthorized]
     def post(self, request_data, *args, **kwarsg):
         request_serializer = CreateOrderRequestSerializer(data=request_data.data)
         if request_serializer.is_valid():
@@ -41,7 +42,7 @@ class OrdersCreateView(APIView):
 class FetchOrderView(APIView):
     def get_permissions(self):
         if self.request.method == "GET":
-            return [permissions.IsAuthenticated()]
+            return [IsAuthorized()]
         
     def get(self, request, *args, **kwargs):
         try:
@@ -65,7 +66,7 @@ class FetchOrderView(APIView):
                                     'items': items,
                                     'total': order.total}
                         return Response(response, status=status.HTTP_200_OK)
-                    return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+                    return Response("Unauthorized", status=status.HTTP_403_FORBIDDEN)
                 except:
                     return Response("Does not exist", status=status.HTTP_404_NOT_FOUND)
             

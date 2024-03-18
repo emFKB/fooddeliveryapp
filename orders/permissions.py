@@ -1,10 +1,6 @@
 from rest_framework import permissions
 from fooddeliveryapp.services import AuthService
 
-class IsStaff(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_staff
-
 class IsAuthorized(permissions.BasePermission):
     def has_permission(self, request, view):
         token = request.META.get('HTTP_AUTHORIZATION', None)

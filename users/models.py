@@ -24,6 +24,30 @@ class UserManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
+class Permission(models.Model):
+    permission_id = models.AutoField(primary_key=True)
+    permission_name = models.CharField()
+    permission_method = models.CharField()
+
+    class Meta:
+        db_table = 'Permissions'
+    
+    def __str__(self):
+        return str(self.permission_id)
+
+class Role(models.Model):
+    role_id = models.AutoField(primary_key=True)
+    role_name = models.CharField(max_length=50)
+    permissions = models.ManyToManyField(Permission, related_name='roles')
+    def __str__(self):
+        return self.role_id
+    
+    class Meta:
+        db_table = 'Roles'
+
+    def __str__(self) -> str:
+        return str(self.role_id)
+    
 class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -35,6 +59,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     contact = models.CharField(max_length=11, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    roles = models.ManyToManyField(Role, related_name='users')
 
     objects = UserManager()
 
@@ -45,7 +70,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         db_table = 'Users'
 
     def __str__(self):
-        return self.user_id
+        return str(self.user_id)
 
 # class User(models.Model):
 #     user_id = models.AutoField(primary_key=True)

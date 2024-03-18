@@ -2,23 +2,27 @@ from rest_framework.views import APIView
 from .serializers import (
     CreateRestaurantSerializer, SearchRestaurantSerializer,
     CreateItemSerializer, SearchRestaurantItems, RestaurantMenuSerializer,
-    DeleteItemSerializer
+    DeleteItemSerializer, RestaurantSerializer
     )
 from .services import RestaurantService, ItemService
 from rest_framework.response import Response
 from django.http import Http404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import IsStaff
+from .permissions import IsStaff, IsAuthorized
 
 class RestaurantView(APIView):
     def get_permissions(self):
         if self.request.method == "POST":
-            return [IsStaff()]
+            return [IsAuthorized()]
         else:
             return [AllowAny()]
     
     def get(self, request_data, *args, **kwargs):
+        if len(request_data.query_params)==0:
+            restaurants = RestaurantService.get_all_restaurant()
+            response = RestaurantSerializer(restaurants, many=True)
+            return Response(response.data)
         serializer = SearchRestaurantSerializer(data=request_data.query_params)
 
         if serializer.is_valid():
@@ -49,8 +53,7 @@ class RestaurantMenuView(APIView):
             return Response(serializer.data)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-            
+
 class ItemView(APIView):
     permission_classes = [IsStaff]
     def get(self, request_data, *args, **kwargs):

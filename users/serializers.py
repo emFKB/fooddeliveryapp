@@ -1,10 +1,22 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Role, Permission
 
 class CreateUserSerializer(serializers.ModelSerializer):
+    roles = serializers.PrimaryKeyRelatedField(many=True, queryset=Role.objects.all(), write_only=True, required=False)
+
     class Meta:
         model = User
-        fields = ['username', 'email', 'created_at', 'password', 'is_staff']
+        fields = ['username', 'email', 'created_at', 'password', 'is_staff', 'roles']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        roles_data = validated_data.pop('roles', [])
+        user = User.objects.create(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        for role in roles_data:
+            user.roles.add(role)
+        return user
 
     def validate(self, data):
         errors = {}
@@ -80,3 +92,13 @@ class UpdateUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(detail=errors)
         
         return data
+    
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ['role_id', 'role_name']
+
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ['permission_id', 'permission_name', 'permission_method']
