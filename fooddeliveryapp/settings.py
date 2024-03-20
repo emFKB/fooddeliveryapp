@@ -58,6 +58,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'EXCEPTION_HANDLER': 'fooddeliveryapp.utils.Exception_Handler.Exception_Handler',
 }
 
 AUTH_USER_MODEL = 'users.user'

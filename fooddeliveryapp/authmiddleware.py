@@ -17,7 +17,7 @@ class JWTAuthenticationMiddleware:
         return response
 
     def process_request(self, request):
-        if request.path in ['/api/login/', '/api/signup/', '/api/token/refresh/', '/api/roles/', '/api/permissions/', '/api/role-permissions/']:
+        if request.path in ['/api/login/', '/api/signup/', '/api/token/refresh/']:
             return None
         token = request.META.get('HTTP_AUTHORIZATION', None)
         if token is None:

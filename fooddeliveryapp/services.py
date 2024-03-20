@@ -25,7 +25,7 @@ class AuthService:
         User = UserService.get_user(user_id=user_id)
         
         roles = User.roles.all()
-        permissions = Permission.objects.filter(roles__in=roles, permission_name=resource, permission_method=action).distinct()
+        permissions = Permission.objects.filter(roles__in=roles, permission_name=resource, permission_method=action)
         for permission in permissions:
             if permission.permission_name == resource and permission.permission_method == action:
                 return True

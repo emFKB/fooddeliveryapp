@@ -44,10 +44,10 @@ class RestaurantDAO(RestaurantInterface):
         if rest_id:
             restaurant = Restaurant.objects.filter(rest_id=rest_id)
         elif (rest_name and rest_loc):
-            restaurant = Restaurant.objects.filter(rest_name=rest_name)\
+            restaurant = Restaurant.objects.filter(rest_name__icontains=rest_name)\
                 .filter(rest_location__icontains = rest_loc)
         elif (rest_name):
-            restaurant = Restaurant.objects.filter(rest_name=rest_name)
+            restaurant = Restaurant.objects.filter(rest_name__icontains=rest_name)
         elif (rest_loc):
             restaurant = Restaurant.objects.filter(rest_location__icontains = rest_loc)
         else:

@@ -20,31 +20,33 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         errors = {}
-        if not data.get('username'):
+        username = data.get('username')
+        email = data.get('email')
+        contact = data.get('contact')
+        password = data.get('password')
+        roles = data.get('roles')
+
+        if not username:
             errors['username'] = 'username cannot be empty'
 
-        if not data.get('email'):
+        if not email:
             errors['email'] = 'email cannot be empty'
         
-        contact = data.get('contact')
         if contact and len(contact) != 11:
             errors['contact'] = 'contact must be 11 digits'
 
-        if not data.get('password'):
+        if not password:
             errors['password'] = 'password should not be empty'
+        
+        if not roles:
+            errors['roles'] = "set a role for user"
+        elif roles and len(roles) < 1:
+            errors['roles'] = "set a role for user"
 
-        print(data.get('password'), errors)
         if errors:
             raise serializers.ValidationError(errors)
         
         return data
-
-class CreateUserResponseSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
-    uid = serializers.UUIDField()
-    email = serializers.EmailField()
-    is_staff = serializers.BooleanField()
-    created_at = serializers.DateTimeField()
 
 class FetchUserSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=False)
@@ -54,13 +56,15 @@ class FetchUserSerializer(serializers.Serializer):
     contact = serializers.CharField(required=False)
     address = serializers.CharField(required=False)
     created_at = serializers.DateTimeField(required=False)
+    roles = serializers.PrimaryKeyRelatedField(many=True, read_only=True, required=False)
 
     class Meta:
         model = User
         fields = ['user_id', 'uid', 'contact', 'address', 'created_at']
 
     def to_representation(self, instance):
-        # Return all fields of the user object
+        roles = instance.roles.all()
+        roles_data = [{'id': role.role_id, 'name': role.role_name} for role in roles]
         return {
             'user_id': instance.user_id,
             'uid': instance.uid,
@@ -69,10 +73,15 @@ class FetchUserSerializer(serializers.Serializer):
             'contact': instance.contact,
             'address': instance.address,
             'created_at': instance.created_at,
+            'roles': roles_data,
         }
     
     def validate(self, data):
-        if not data.get('user_id') and not data.get('username') and not data.get('email') and not data.get('contact') and not data.get('user_id') and not data.get('uid'):
+        username = data.get('username')
+        email = data.get('email')
+        contact = data.get('contact')
+        user_id = data.get('user_id')
+        if not user_id and not username and not email and not contact:
             raise serializers.ValidationError({'error':'please provide one user attribute to search on users'})
         
         return data

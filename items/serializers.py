@@ -115,10 +115,18 @@ class SearchRestaurantItems(serializers.Serializer):
         return attributes
     
 class DeleteItemSerializer(serializers.Serializer):
-    item_id = serializers.IntegerField(read_only=True)
+    item_id = serializers.IntegerField()
     item_name = serializers.CharField(read_only=True)
     item_price = serializers.FloatField(read_only=True)
     item_desc = serializers.CharField(read_only=True)
+
     class Meta:
         model = Item
         fields = ['item_id', 'item_name', 'item_price', 'item_desc']
+
+    def validate(self, attributes):
+        print(attributes)
+        if not attributes.get('item_id'):
+            raise ValidationError({'item_id': 'item_id cannot be null'})
+        
+        return attributes
