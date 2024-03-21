@@ -3,15 +3,25 @@ from collections import OrderedDict
 from .serializers import (FetchUserSerializer, CreateUserSerializer, UpdateUserSerializer)
 from rest_framework_simplejwt.tokens import RefreshToken
 from fooddeliveryapp.utils.Exceptions import UserNotFoundException, InvalidException
-class UserService:
+from rest_framework.validators import ValidationError
 
+class UserService:
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+    
     def create_user(self, request):
         serializer = CreateUserSerializer(data=request.data)
         
-        if serializer.is_valid():
-            user = UserDAO.create_user(serializer.validated_data)
-            return serializer.data, None
-        return None, serializer.errors
+        if not serializer.is_valid():
+            raise ValidationError(serializer.errors)
+        user = UserDAO.create_user(serializer.validated_data)
+        return serializer.data
+    
     
     @staticmethod
     def get_user(request_data:OrderedDict = None, user_id:int =None):
@@ -23,23 +33,28 @@ class UserService:
     
     def fetch_user(self, request):
         serializer = FetchUserSerializer(data=request.query_params)
-        if serializer.is_valid():
-            queryset = UserDAO.get_user_by_request_data(request_data=serializer.validated_data)
-            if queryset:
-                serialized_data = [serializer.to_representation(user) for user in queryset]
-                return serialized_data, None
-            else:
-                raise UserNotFoundException("User Not Found")
-        return None, serializer.errors
+
+        if not serializer.is_valid():
+            raise ValidationError(serializer.errors)
+        
+        queryset = UserDAO.get_user_by_request_data(request_data=serializer.validated_data)
+        if queryset:
+            serialized_data = [serializer.to_representation(user) for user in queryset]
+            return serialized_data
+        else:
+            raise UserNotFoundException("User Not Found")
 
     
     def update_user(self, request):
+        print('Updating User: ', request.user)
         user = UserDAO.get_user_by_id(user_id=request.user.user_id)
         serializer = UpdateUserSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return serializer.data, None
-        return None, serializer.errors
+        
+        if not serializer.is_valid():
+            raise ValidationError(serializer.errors)
+        
+        serializer.save()
+        return serializer.data
     
     def login_user(self, request):
         email = request.data.get('email')
@@ -56,6 +71,6 @@ class UserService:
                 'username': user.username,
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
-            }, None
+            }
         else:
             raise InvalidException('Invalid username or password')

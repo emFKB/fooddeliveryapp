@@ -10,6 +10,14 @@ from rest_framework.validators import ValidationError
 from fooddeliveryapp.utils.Exceptions import NotFoundException
 
 class RestaurantService():
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+    
     def register_restaurant(self, request):
         serializer = CreateRestaurantSerializer(data=request.data)
 
@@ -55,10 +63,17 @@ class RestaurantService():
         raise ValidationError(serializer.errors)
     
 class ItemService():
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+    
     def add_item(self, request):
         serializer = CreateItemSerializer(data=request.data)
         if (serializer.is_valid()):
-            print(serializer.data, serializer.validated_data)
             item = ItemDAO.add_item(serializer.validated_data)
             return serializer.data
         raise ValidationError(serializer.errors)
@@ -79,7 +94,6 @@ class ItemService():
     def remove_item(self, request):
         serializer = DeleteItemSerializer(data=request.data)
         if (serializer.is_valid()):
-            print(serializer.data)
             item = ItemDAO.delete_item(serializer.validated_data.get('item_id'))
             if item:
                 return item

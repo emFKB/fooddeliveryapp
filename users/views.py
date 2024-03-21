@@ -1,13 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .services import UserService
+from fooddeliveryapp.servicefactory import ServiceFactory
 from .serializers import (RoleSerializer, PermissionSerializer)
 from .models import Role, Permission
 from .permissions import IsAuthorized
 
 class UserAPIView(APIView):
-    user_service = UserService()
+    user_service = ServiceFactory.get_service('user')
 
     def get_permissions(self):
         if self.request.method == "POST":
@@ -17,30 +17,23 @@ class UserAPIView(APIView):
         
     def get(self, request, *args, **kwargs):
         
-        response, error = self.user_service.fetch_user(request=request)
-        if error is None:
-            return Response(response, status=status.HTTP_200_OK)
-        return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        response= self.user_service.fetch_user(request=request)
+        return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        response, error = self.user_service.create_user(request=request)
-        if error is None:
-            return Response(response, status=status.HTTP_201_CREATED)
-        return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        response = self.user_service.create_user(request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
         
     def put(self, request, *args, **kwargs):
-        response, error = self.user_service.update_user(request=request)
-        if error is None:
-            return Response(response, status=status.HTTP_201_CREATED)
-        return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        response= self.user_service.update_user(request=request)
+        return Response(response, status=status.HTTP_201_CREATED)
     
 class LoginUserView(APIView):
-    user_service = UserService()
+    user_service = ServiceFactory.get_service('user')
+
     def post(self, request, *args, **kwargs):
-        response, error = self.user_service.login_user(request=request)
-        if error is None:
-            return Response(response, status=status.HTTP_200_OK)
-        return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        response= self.user_service.login_user(request=request)
+        return Response(response, status=status.HTTP_200_OK)
         
 class RoleView(APIView):
     permission_classes = [IsAuthorized]
