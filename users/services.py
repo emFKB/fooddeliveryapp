@@ -22,9 +22,7 @@ class UserService:
         user = UserDAO.create_user(serializer.validated_data)
         return serializer.data
     
-    
-    @staticmethod
-    def get_user(request_data:OrderedDict = None, user_id:int =None):
+    def get_user(self, request_data:OrderedDict = None, user_id:int =None):
         if user_id:
             return UserDAO.get_user_by_id(user_id=user_id)
         elif request_data:
@@ -60,7 +58,7 @@ class UserService:
         email = request.data.get('email')
         password = request.data.get('password')
         
-        user = UserService.get_user(OrderedDict(email=email)).first()
+        user = self.get_user(OrderedDict(email=email)).first()
         if user and user.check_password(password):
             refresh = RefreshToken.for_user(user)
             refresh['username'] = user.username

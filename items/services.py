@@ -26,12 +26,10 @@ class RestaurantService():
             return serializer.data
         raise ValidationError(serializer.errors)
     
-    @staticmethod
-    def get_all_restaurant():
+    def get_all_restaurant(self):
         return RestaurantDAO.get_all_restaurant()
 
-    @staticmethod
-    def get_restaurant(attributes: OrderedDict = None, rest_id:int = None):
+    def get_restaurant(self, attributes: OrderedDict = None, rest_id:int = None):
         if (attributes):
             return RestaurantDAO.get_restaurant_by_attributes(attributes)
         elif rest_id:
@@ -39,8 +37,7 @@ class RestaurantService():
         else:
             return None
         
-    @staticmethod 
-    def get_restaurant_menu(rest_id:int ):
+    def get_restaurant_menu(self, rest_id:int ):
         restaurant = RestaurantDAO.get_restaurant_items(rest_id)
         serializer = RestaurantMenuSerializer(restaurant)
         if serializer.is_valid:

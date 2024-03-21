@@ -49,16 +49,13 @@ class OrderService:
         except ObjectDoesNotExist:
             raise InvalidException("Item does not exist")
     
-    @staticmethod
-    def get_customer_orders(cust_id):
+    def get_customer_orders(self, cust_id):
         return OrderDAO.get_customer_orders_by_id(cust_id=cust_id)
     
-    @staticmethod
-    def get_restaurant_orders(rest_id):
+    def get_restaurant_orders(self, rest_id):
         return OrderDAO.get_restaurant_orders_by_id(rest_id=rest_id)
     
-    @staticmethod
-    def get_order_by_id(order_id):
+    def get_order_by_id(self, order_id):
         return OrderDAO.get_order_by_id(order_id=order_id)
     
     def add_orderitems(self, items, order_id):
@@ -78,9 +75,9 @@ class OrderService:
             return self.__fetch_single_order(request=request)
         
         if request.user.is_staff:
-            orders = OrderService.get_restaurant_orders(rest_id=request.user.user_id)
+            orders = self.get_restaurant_orders(rest_id=request.user.user_id)
         else:
-            orders = OrderService.get_customer_orders(cust_id=request.user.user_id)
+            orders = self.get_customer_orders(cust_id=request.user.user_id)
         
         return self.__fetch_multiple_orders(request=request, orders=orders)
             
