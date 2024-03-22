@@ -1,33 +1,20 @@
-import jwt
-from .settings import SECRET_KEY
-from users.services import UserService
-from users.models import Permission
+import requests
 
-class AuthService:
-    @staticmethod
-    def _decode_jwt(token):
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            return payload
-        except jwt.PyJWTError as ex:
-            print(ex)
-            return None
-    
+class AuthService:    
     @staticmethod
     def authenticate(jwt_token, resource, action):
-        payload = AuthService._decode_jwt(jwt_token.split(' ')[1])
-        if not payload:
+        url = "http://127.0.0.1:8000/authorize/"
+        headers = {"Content-Type": "application/json"}
+        data = {
+            "jwt_token": jwt_token,
+            "resource": resource,
+            "action": action,
+        }
+
+        try:
+            response = requests.post(url, json=data, headers=headers)
+            response.raise_for_status()
+            return False if response.text=='false' else True
+        except requests.HTTPError as e:
+            print(e)
             return False
-        
-        user_id = payload.get('user_id')
-        if not user_id:
-            return False
-        User = UserService.get_user(user_id=user_id)
-        
-        roles = User.roles.all()
-        permissions = Permission.objects.filter(roles__in=roles, permission_name=resource, permission_method=action)
-        for permission in permissions:
-            if permission.permission_name == resource and permission.permission_method == action:
-                return True
-        
-        return False

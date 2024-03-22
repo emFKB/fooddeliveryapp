@@ -63,10 +63,12 @@ class UserService:
             refresh = RefreshToken.for_user(user)
             refresh['username'] = user.username
             refresh['email'] = user.email
+            refresh['roles'] = [role.role_id for role in user.roles.all()]
             return {
                 'user_id': user.user_id,
                 'uid': user.uid,
                 'username': user.username,
+                'roles': [role.role_id for role in user.roles.all()],
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
             }
