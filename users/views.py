@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status
 from fooddeliveryapp.servicefactory import ServiceFactory
 from .serializers import (RoleSerializer, PermissionSerializer)
 from .models import Role, Permission
@@ -8,7 +8,7 @@ from fooddeliveryapp.utils.permissions import IsAuthorized
 
 class CreateUserAPIView(APIView):
     permission_classes = [IsAuthorized]
-    
+
     user_service = ServiceFactory.get_service('user')
         
     def get(self, request, *args, **kwargs):

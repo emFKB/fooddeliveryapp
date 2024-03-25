@@ -18,7 +18,6 @@ class JWTAuthenticationMiddleware:
         return response
 
     def process_request(self, request):
-        print(request.path, self.path_exception(request.path))
         if self.path_exception(request.path):
             return None
         token = request.META.get('HTTP_AUTHORIZATION', None)
