@@ -7,17 +7,10 @@ from .serializers import (
     DeleteItemSerializer, RestaurantSerializer
     )
 from rest_framework.validators import ValidationError
-from fooddeliveryapp.utils.Exceptions import NotFoundException
+from fooddeliveryapp.utils.Exceptions import NotFoundException, InvalidException
+from django.core.exceptions import ObjectDoesNotExist
 
-class RestaurantService():
-    _instance = None
-
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
-    
+class RestaurantService():    
     def register_restaurant(self, request):
         serializer = CreateRestaurantSerializer(data=request.data)
 
@@ -38,11 +31,14 @@ class RestaurantService():
             return None
         
     def get_restaurant_menu(self, rest_id:int ):
-        restaurant = RestaurantDAO.get_restaurant_items(rest_id)
-        serializer = RestaurantMenuSerializer(restaurant)
-        if serializer.is_valid:
-            return serializer.data
-        raise ValidationError(serializer.errors)
+        try:
+            restaurant = RestaurantDAO.get_restaurant_items(rest_id)
+            serializer = RestaurantMenuSerializer(restaurant)
+            if serializer.is_valid:
+                return serializer.data
+            raise ValidationError(serializer.errors)
+        except ObjectDoesNotExist:
+            raise NotFoundException("Restaurant does not exist")
     
     def fetch_restaurant(self, request):
         if len(request.query_params)==0:
@@ -60,14 +56,6 @@ class RestaurantService():
         raise ValidationError(serializer.errors)
     
 class ItemService():
-    _instance = None
-
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
-    
     def add_item(self, request):
         serializer = CreateItemSerializer(data=request.data)
         if (serializer.is_valid()):
@@ -110,9 +98,12 @@ class ItemService():
         raise ValidationError(serializer.errors)
 
         
-    def calculate_item_total(self, items):
+    def calculate_item_total(self, items, rest_id):
         total = 0
         item_ids = [item['item_id'] for item in items]
         for item in items:
-            total += item['quantity'] * ItemDAO.get_item_by_id(item_id=item['item_id']).item_price
+            item_db = ItemDAO.get_item_by_id(item_id=item['item_id'])
+            if not item_db.rest_id.rest_id == rest_id: 
+                raise InvalidException("Item does not belong to the restaurant")
+            total += item['quantity'] * item_db.item_price
         return total

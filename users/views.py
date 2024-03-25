@@ -4,16 +4,12 @@ from rest_framework import status, permissions
 from fooddeliveryapp.servicefactory import ServiceFactory
 from .serializers import (RoleSerializer, PermissionSerializer)
 from .models import Role, Permission
-from .permissions import IsAuthorized
+from fooddeliveryapp.utils.permissions import IsAuthorized
 
-class UserAPIView(APIView):
+class CreateUserAPIView(APIView):
+    permission_classes = [IsAuthorized]
+    
     user_service = ServiceFactory.get_service('user')
-
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.AllowAny()]
-        if self.request.method in ["GET", "PUT"]:
-            return [IsAuthorized()]
         
     def get(self, request, *args, **kwargs):
         
@@ -29,6 +25,8 @@ class UserAPIView(APIView):
         return Response(response, status=status.HTTP_201_CREATED)
     
 class LoginUserView(APIView):
+    permission_classes = [IsAuthorized]
+
     user_service = ServiceFactory.get_service('user')
 
     def post(self, request, *args, **kwargs):

@@ -8,18 +8,14 @@ from rest_framework.validators import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
 
 class OrderService:
-    _instance = None
+    __item_service = None
 
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
+    def __init__(self, item_service = None):
+        self.__item_service = item_service
     
     def create_order(self, request):
         try:
             request_serializer = CreateOrderRequestSerializer(data=request.data)
-            item_service = ItemService()
             
             if not request_serializer.is_valid():
                 raise ValidationError(request_serializer.errors)
@@ -28,7 +24,7 @@ class OrderService:
                 cust = request.user.user_id
                 rest = request_serializer.validated_data['rest_id']
                 items = request_serializer.validated_data['items']
-                total = item_service.calculate_item_total(items)
+                total = self.__item_service.calculate_item_total(items, rest)
                 
                 order_dict = {"cust_id":cust, "rest_id": rest , "total":float(total)}
                 order_serializer = CreateOrderSerializer(data=order_dict)
@@ -37,7 +33,7 @@ class OrderService:
                     raise ValidationError(order_serializer.errors)
                 
                 order = OrderDAO.create_order(order_serializer.validated_data)
-                self.add_orderitems(items, order.order_id)
+                self.__add_orderitems(items, order.order_id)
 
                 response_dict = {'order_id': order.order_id, 'cust_name': order.cust_id.username, 'rest_name': order.rest_id.rest_name, 'total': order.total}
                 order_response = CreateOrderResponseSerializer(data=response_dict)
@@ -46,6 +42,7 @@ class OrderService:
                     raise ValidationError(order_serializer.errors)
                 
                 return order_response.validated_data
+            
         except ObjectDoesNotExist:
             raise InvalidException("Item does not exist")
     
@@ -58,7 +55,7 @@ class OrderService:
     def get_order_by_id(self, order_id):
         return OrderDAO.get_order_by_id(order_id=order_id)
     
-    def add_orderitems(self, items, order_id):
+    def __add_orderitems(self, items, order_id):
         try:
             for item in items:
                 item_dict = {"order_id": order_id, "item_id": ItemService.get_item_by_id(item_id=item['item_id']).item_id, "quantity": item['quantity']}

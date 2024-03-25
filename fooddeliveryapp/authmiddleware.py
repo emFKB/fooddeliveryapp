@@ -1,6 +1,7 @@
 import jwt
 from django.http import JsonResponse
 from .settings import SECRET_KEY
+import re
 
 class JWTAuthenticationMiddleware:
     def __init__(self, get_response):
@@ -17,7 +18,8 @@ class JWTAuthenticationMiddleware:
         return response
 
     def process_request(self, request):
-        if request.path in ['/api/login/', '/api/signup/', '/api/token/refresh/']:
+        print(request.path, self.path_exception(request.path))
+        if self.path_exception(request.path):
             return None
         token = request.META.get('HTTP_AUTHORIZATION', None)
         if token is None:
@@ -33,3 +35,9 @@ class JWTAuthenticationMiddleware:
             return JsonResponse({'error': 'Invalid token'}, status=401)
 
         return None
+
+    def path_exception(self, path):
+        if (path in ['/api/login/', '/api/signup/', '/api/token/refresh/', '/api/restaurant/search/', '/api/item/search/'])\
+            or (re.search('/api/restaurant/\d/items/', path)):
+            return True
+        return False

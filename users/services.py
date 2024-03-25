@@ -6,14 +6,6 @@ from fooddeliveryapp.utils.Exceptions import UserNotFoundException, InvalidExcep
 from rest_framework.validators import ValidationError
 
 class UserService:
-    _instance = None
-
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
-    
     def create_user(self, request):
         serializer = CreateUserSerializer(data=request.data)
         

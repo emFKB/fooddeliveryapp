@@ -2,17 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from .permissions import IsAuthorized
+from fooddeliveryapp.utils.permissions import IsAuthorized
 from fooddeliveryapp.servicefactory import ServiceFactory
 
 class RestaurantView(APIView):
     restaurant_service = ServiceFactory.get_service('restaurant')
 
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsAuthorized()]
-        else:
-            return [AllowAny()]
+    permission_classes = [IsAuthorized]
     
     def get(self, request, *args, **kwargs):
         response = self.restaurant_service.fetch_restaurant(request=request)
@@ -23,6 +19,7 @@ class RestaurantView(APIView):
         return Response(response, status=status.HTTP_201_CREATED)
     
 class RestaurantMenuView(APIView):
+    permission_classes = [IsAuthorized]
     restaurant_service = ServiceFactory.get_service('restaurant')
 
     def get(self, request, *args, **Kwargs):
@@ -31,13 +28,9 @@ class RestaurantMenuView(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 class ItemView(APIView):
+    permission_classes = [IsAuthorized]
     item_service = ServiceFactory.get_service('item')
-    
-    def get_permissions(self):
-        if self.request.method in ["POST", 'DELETE']:
-            return [IsAuthorized()]
-        else:
-            return [AllowAny()]
+
     def get(self, request, *args, **kwargs):
         response = self.item_service.fetch_item(request)
         return Response(response, status=status.HTTP_200_OK)

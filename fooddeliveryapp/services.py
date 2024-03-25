@@ -1,8 +1,14 @@
 import requests
+import re
 
 class AuthService:    
     @staticmethod
-    def authenticate(jwt_token, resource, action):
+    def authorize(jwt_token, resource, action):
+        
+        if (resource in ['/api/login/', '/api/signup/', '/api/token/refresh/', '/api/restaurant/search/', '/api/item/search/'])\
+            or (re.search('/api/restaurant/\d/items/', resource)):
+            return True
+        
         url = "http://127.0.0.1:8000/authorize/"
         headers = {"Content-Type": "application/json"}
         data = {

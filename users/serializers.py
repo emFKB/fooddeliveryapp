@@ -58,10 +58,6 @@ class FetchUserSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(required=False)
     roles = serializers.PrimaryKeyRelatedField(many=True, read_only=True, required=False)
 
-    class Meta:
-        model = User
-        fields = ['user_id', 'uid', 'contact', 'address', 'created_at']
-
     def to_representation(self, instance):
         roles = instance.roles.all()
         roles_data = [{'id': role.role_id, 'name': role.role_name} for role in roles]
