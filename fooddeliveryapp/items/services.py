@@ -9,6 +9,7 @@ from .serializers import (
 from rest_framework.validators import ValidationError
 from fooddeliveryapp.utils.Exceptions import NotFoundException, InvalidException
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
 
 class RestaurantService():    
     def register_restaurant(self, request):
@@ -16,11 +17,17 @@ class RestaurantService():
 
         if serializer.is_valid():
             restaurant = RestaurantDAO.add_restaurant(restaurant_data=serializer.validated_data)
+            cache.delete('restaurants')
             return serializer.data
         raise ValidationError(serializer.errors)
     
     def get_all_restaurant(self):
-        return RestaurantDAO.get_all_restaurant()
+        cache_restaurant = cache.get('restaurants', None)
+        if not cache_restaurant:
+            rest = RestaurantDAO.get_all_restaurant()
+            cache_restaurant.set('restaurants', rest)
+            return rest
+        return cache_restaurant
 
     def get_restaurant(self, attributes: OrderedDict = None, rest_id:int = None):
         if (attributes):

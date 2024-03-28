@@ -18,7 +18,7 @@ class ServiceFactory:
             elif view == 'restaurant':
                 cls._instances[view] = RestaurantService()
             elif view == 'permission_auth':
-                cls._instances[view] = AuthService('127.0.0.1', '8000')
+                cls._instances[view] = AuthService('auth-service', '8000')
             else:
                 raise ValueError(f"Service for {view} doesn't exist")
         return cls._instances[view]

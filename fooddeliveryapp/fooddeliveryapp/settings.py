@@ -102,11 +102,19 @@ DATABASES = {
         'NAME': 'fooddelivery',
         'USER': 'citizix_user',
         'PASSWORD': 'S3cret',
-        'PORT': '5433',
-        'HOST': 'localhost'
+        'PORT': '5432',
+        'HOST': 'postgres'
     }
 }
 
+# Cache
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+        "LOCATION": "memcache:11212",
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
