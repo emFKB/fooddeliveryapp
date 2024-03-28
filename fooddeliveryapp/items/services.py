@@ -69,19 +69,6 @@ class ItemService():
             item = ItemDAO.add_item(serializer.validated_data)
             return serializer.data
         raise ValidationError(serializer.errors)
-    
-    @staticmethod
-    def get_item(attributes: OrderedDict = None, item_id:int = None):
-        if attributes:
-            return ItemDAO.get_item_by_attributes(attributes=attributes)
-        elif item_id:
-            return ItemDAO.get_item_by_id(item_id=item_id)
-        else:
-            return None
-        
-    @staticmethod
-    def get_item_by_id(item_id):
-        return ItemDAO.get_item_by_id(item_id=item_id)
 
     def remove_item(self, request):
         serializer = DeleteItemSerializer(data=request.data)
@@ -107,7 +94,6 @@ class ItemService():
         
     def calculate_item_total(self, items, rest_id):
         total = 0
-        item_ids = [item['item_id'] for item in items]
         for item in items:
             item_db = ItemDAO.get_item_by_id(item_id=item['item_id'])
             if not item_db.rest_id.rest_id == rest_id: 
